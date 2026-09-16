@@ -56,6 +56,8 @@ jobs:
         run: |
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Resolve script dependencies
+        run: moon update
       - name: Rebuild Unicode tables
         run: |
           moon run tools/generate_ducet.mbtx -- third_party/unicode/uca-17.0.0/allkeys.txt generated_ducet.mbt
