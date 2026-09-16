@@ -26,6 +26,5 @@ preferred_target = "wasm-gc"
 description = "Unicode Collation Algorithm and DUCET sort-key toolkit for MoonBit"
 
 import {
-  "moonbit-community/normalization@0.5.0",
-  "moonbitlang/async@0.18.1",
+  "moonbitlang/async@0.20.2",
 }

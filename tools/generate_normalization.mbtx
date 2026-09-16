@@ -1,0 +1,119 @@
+import {
+  "moonbitlang/async@0.20.2",
+  "moonbitlang/async@0.20.2/fs",
+  "moonbitlang/async@0.20.2/io",
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+}
+
+struct NormalizationEntry {
+  codepoint : Int
+  ccc : Int
+  decomposition : Array[Int]
+}
+
+fn parse_hex(value : StringView) -> Int raise {
+  @string.parse_int(value, base=16)
+}
+
+fn parse_decimal(value : StringView) -> Int raise {
+  @string.parse_int(value, base=10)
+}
+
+fn canonical_decomposition(value : StringView) -> Array[Int] raise {
+  let text = value.to_owned().trim().to_owned()
+  let result : Array[Int] = []
+  if text.length() == 0 || text.has_prefix("<") {
+    return result
+  }
+  for part in text.split(" ") {
+    if part.length() > 0 {
+      result.push(parse_hex(part))
+    }
+  }
+  result
+}
+
+fn write_int_array(
+  out : StringBuilder,
+  name : String,
+  values : Array[Int],
+) -> Unit {
+  out.write_string("let ")
+  out.write_string(name)
+  out.write_string(" : FixedArray[Int] = [\n")
+  for index, value in values {
+    if index % 12 == 0 {
+      out.write_string("  ")
+    }
+    out.write_string(value.to_string())
+    out.write_string(",")
+    if index % 12 == 11 || index + 1 == values.length() {
+      out.write_string("\n")
+    } else {
+      out.write_string(" ")
+    }
+  }
+  out.write_string("]\n\n///|\n")
+}
+
+async fn main {
+  let args = @env.args()
+  let input = if args.length() > 1 {
+    args[1]
+  } else {
+    "third_party/unicode/uca-17.0.0/UnicodeData.txt"
+  }
+  let output = if args.length() > 2 {
+    args[2]
+  } else {
+    "generated_normalization.mbt"
+  }
+  let source = @fs.read_file(input).text()
+  let entries : Array[NormalizationEntry] = []
+  for line in source.split("\n") {
+    let fields = line.to_owned().split(";").to_array()
+    if fields.length() >= 6 {
+      let ccc = parse_decimal(fields[3])
+      let decomposition = canonical_decomposition(fields[5])
+      if ccc != 0 || decomposition.length() > 0 {
+        entries.push({
+          codepoint: parse_hex(fields[0]),
+          ccc,
+          decomposition,
+        })
+      }
+    }
+  }
+  entries.sort_by((left, right) => left.codepoint - right.codepoint)
+  let codepoints : Array[Int] = []
+  let classes : Array[Int] = []
+  let starts : Array[Int] = []
+  let lengths : Array[Int] = []
+  let decompositions : Array[Int] = []
+  for entry in entries {
+    codepoints.push(entry.codepoint)
+    classes.push(entry.ccc)
+    starts.push(decompositions.length())
+    lengths.push(entry.decomposition.length())
+    for codepoint in entry.decomposition {
+      decompositions.push(codepoint)
+    }
+  }
+  let out = StringBuilder(size_hint=source.length() / 3)
+  out.write_string("// Generated from Unicode 17.0.0 UnicodeData.txt. DO NOT EDIT.\n")
+  out.write_string("// Generator: tools/generate_normalization.mbtx\n\n///|\n")
+  write_int_array(out, "normalization_codepoints", codepoints)
+  write_int_array(out, "normalization_ccc", classes)
+  write_int_array(out, "normalization_decomp_starts", starts)
+  write_int_array(out, "normalization_decomp_lengths", lengths)
+  write_int_array(out, "normalization_decomp_values", decompositions)
+  @fs.write_file(output, out.to_string(), create_mode=CreateOrTruncate)
+  println(
+    "generated " +
+    entries.length().to_string() +
+    " normalization records and " +
+    decompositions.length().to_string() +
+    " decomposition scalars",
+  )
+}

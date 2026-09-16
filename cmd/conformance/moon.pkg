@@ -1,0 +1,13 @@
+import {
+  "CaptainK-65/moon-collate" @collate,
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/io",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+}
+
+pkgtype(kind: "executable")
+
+supported_targets = "+native"

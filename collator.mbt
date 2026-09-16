@@ -120,7 +120,7 @@ fn build_key(
 
 ///|
 fn Collator::analyze(self : Collator, text : String) -> CollationTrace {
-  let normalized = @normalization.nfd(text)
+  let normalized = nfd_unicode_17(text)
   let codepoints = codepoints_of(normalized)
   let steps : Array[TraceStep] = []
   let elements : Array[CollationElement] = []

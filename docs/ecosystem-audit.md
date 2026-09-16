@@ -24,7 +24,7 @@ was found in the checked sources.
 
 | Project | Existing responsibility | MoonCollate responsibility |
 | --- | --- | --- |
-| `moonbit-community/normalization` | NFC/NFD/NFKC/NFKD | consumes NFD; does not reimplement it |
+| `moonbit-community/normalization` | Unicode 16 NFC/NFD/NFKC/NFKD | bundles the Unicode 17 canonical subset required by UCA version alignment |
 | `moonbit-community/ucd` | Unicode properties and case mapping | DUCET mapping and multilevel comparison |
 | `moonbit-community/bidi` | bidirectional display ordering | linguistic sorting and sort keys |
 | `kawaz/grapheme` | grapheme cluster segmentation | collation elements and comparison |
@@ -45,3 +45,12 @@ This audit describes public indexed code, not private or undiscoverable work.
 Before the `v0.1.0` release, the same searches must be repeated and this file
 updated. Any newly discovered maintained equivalent blocks release until the
 relationship and non-overlapping scope are documented.
+
+## Version-alignment note
+
+The current public normalization package uses Unicode 16.0.0 data, while UCA
+17.0.0 conformance depends on canonical combining classes introduced in Unicode
+17. MoonCollate therefore generates a narrow internal NFD table from the pinned
+Unicode 17 `UnicodeData.txt`. This is not presented as a competing general
+normalization package: it exposes no NFC/NFKC/NFKD API and exists solely to
+prevent mixed-version collation results.
