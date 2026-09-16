@@ -1,0 +1,13 @@
+.DS_Store
+_build/
+target/
+target
+.mooncakes/
+.moonagent/
+.repos/
+node_modules/
+test-results/
+playwright-report/
+third_party/unicode/uca-17.0.0/CollationTest.zip
+third_party/unicode/uca-17.0.0/collation-test/CollationTest/CollationTest_NON_IGNORABLE.txt
+third_party/unicode/uca-17.0.0/collation-test/CollationTest/CollationTest_SHIFTED.txt
