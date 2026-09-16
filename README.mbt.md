@@ -1,5 +1,7 @@
 # MoonCollate
 
+![MoonCollate — Unicode order, made visible](docs/assets/mooncollate-cover.png)
+
 MoonCollate is a pure MoonBit Unicode collation toolkit. It turns Unicode text
 into comparable collation elements and reusable sort keys using the Unicode
 Collation Algorithm (UCA) and the Default Unicode Collation Element Table
@@ -7,6 +9,10 @@ Collation Algorithm (UCA) and the Default Unicode Collation Element Table
 
 > Status: active development toward `v0.1.0`. Conformance claims are made only
 > for test profiles recorded in [`docs/conformance.md`](docs/conformance.md).
+
+[![CI](https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml/badge.svg)](https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml)
+[![Collation Lab](https://img.shields.io/badge/demo-Collation_Lab-c7ff4a?labelColor=111217)](https://captaink-65.github.io/moon-collate/)
+[![Unicode 17](https://img.shields.io/badge/Unicode-17.0.0-a58cff)](https://www.unicode.org/reports/tr10/)
 
 ## Why this library exists
 
@@ -16,7 +22,7 @@ text to sort. MoonCollate fills the collation layer between MoonBit's Unicode
 property/normalization packages and higher-level internationalization, search,
 table, and database software.
 
-## Planned public surface
+## Public surface
 
 - configurable primary through identical comparison strengths;
 - non-ignorable and shifted alternate handling;
@@ -24,14 +30,38 @@ table, and database software.
 - DUCET contractions, expansions, and implicit weights;
 - canonical-equivalence-safe comparison through NFD normalization;
 - structured explanation traces for debugging and education;
-- a native CLI and a browser-based Collation Lab.
+- stable collection helpers and a cached binary-search index;
+- a native CLI and a browser-based [Collation Lab](https://captaink-65.github.io/moon-collate/).
 
-```mbt nocheck
+```mbt check
 ///|
 test {
   let collator = default_collator()
   inspect(collator.compare("resume", "résumé").to_string(), content="Less")
 }
+```
+
+The committed Unicode 17 short conformance profiles currently cover 208,039
+non-ignorable and 229,829 shifted adjacent pairs with zero failures. See the
+[user guide](docs/guide.md), [algorithm notes](docs/algorithm.md), and exact
+[conformance statement](docs/conformance.md).
+
+## Quick start
+
+```mbt check
+///|
+test {
+  let collator = default_collator().with_numeric(true)
+  assert_eq(collator.sort(["file10", "file2", "file1"]), [
+    "file1", "file2", "file10",
+  ])
+}
+```
+
+```text
+moon run cmd/main -- compare resume résumé
+moon run cmd/main -- sort --numeric file10 file2 file1
+moon run cmd/main -- explain café
 ```
 
 ## Scope boundary
@@ -48,6 +78,8 @@ for explicit non-goals.
 moon update
 moon check --target all
 moon test --target all
+moon run --target native cmd/conformance
+moon run --target native cmd/conformance -- --shifted
 moon info
 moon fmt
 ```

@@ -1,0 +1,41 @@
+name: Bug report
+description: Report an incorrect comparison, key, trace, or runtime failure.
+title: "bug: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping make Unicode ordering dependable.
+  - type: input
+    id: version
+    attributes:
+      label: MoonCollate version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend
+      options: [native, JavaScript, WebAssembly, wasm-gc, multiple]
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Minimal input and configuration
+      description: Include escaped code points when invisible characters are involved.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected ordering
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual ordering and trace
+    validations:
+      required: true

@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose a reusable collation capability or integration.
+title: "feat: "
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Ecosystem use case
+      description: Which MoonBit libraries or applications would reuse this capability?
+    validations:
+      required: true
+  - type: textarea
+    id: standard
+    attributes:
+      label: Standards basis
+      description: Link the relevant UTS, UAX, CLDR, or interoperability requirement.
+  - type: textarea
+    id: api
+    attributes:
+      label: Proposed API
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This belongs in a general-purpose library rather than one product.
+          required: true

@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Check and test all backends
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Resolve dependencies
+        run: moon update
+      - name: Record toolchain
+        run: moon version --all
+      - name: Check formatting
+        run: moon fmt --check
+      - name: Check every backend
+        run: moon check --target all
+      - name: Test every backend
+        run: moon test --target all
+      - name: Validate public interface
+        run: moon info
+
+  conformance:
+    name: Unicode 17 conformance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - run: moon update
+      - name: Non-ignorable short profile
+        run: moon run --target native cmd/conformance
+      - name: Shifted short profile
+        run: moon run --target native cmd/conformance -- --shifted
+
+  generated-data:
+    name: Generated data is reproducible
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Rebuild Unicode tables
+        run: |
+          moon run tools/generate_ducet.mbtx -- third_party/unicode/uca-17.0.0/allkeys.txt generated_ducet.mbt
+          moon run tools/generate_normalization.mbtx -- third_party/unicode/uca-17.0.0/UnicodeData.txt generated_normalization.mbt
+          moon fmt
+      - name: Reject stale generated output
+        run: git diff --exit-code -- generated_ducet.mbt generated_normalization.mbt
