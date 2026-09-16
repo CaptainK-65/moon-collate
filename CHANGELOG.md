@@ -2,7 +2,7 @@
 
 All notable changes follow semantic versioning.
 
-## 0.1.0 — unreleased
+## 0.1.0 — 2026-09-16
 
 - Implement Unicode 17.0.0 DUCET singleton, expansion, contraction,
   discontiguous-contraction, and implicit-weight processing.

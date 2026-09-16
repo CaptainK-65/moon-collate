@@ -7,8 +7,8 @@ into comparable collation elements and reusable sort keys using the Unicode
 Collation Algorithm (UCA) and the Default Unicode Collation Element Table
 (DUCET).
 
-> Status: active development toward `v0.1.0`. Conformance claims are made only
-> for test profiles recorded in [`docs/conformance.md`](docs/conformance.md).
+> Status: `v0.1.0`. Conformance claims are made only for test profiles recorded
+> in [`docs/conformance.md`](docs/conformance.md).
 
 [![CI](https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml/badge.svg)](https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml)
 [![Collation Lab](https://img.shields.io/badge/demo-Collation_Lab-c7ff4a?labelColor=111217)](https://captaink-65.github.io/moon-collate/)
