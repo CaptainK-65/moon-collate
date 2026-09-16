@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Explore Unicode 17 collation with MoonCollate's MoonBit engine." />
+    <title>MoonCollate · Collation Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="MoonCollate home">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span>MoonCollate</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#lab">Lab</a>
+        <a href="https://github.com/CaptainK-65/moon-collate">GitHub</a>
+      </nav>
+      <div id="runtime-status" class="runtime waiting"><span></span>Loading MoonBit</div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Unicode 17 · UCA · DUCET</p>
+          <h1>Text order,<br /><em>made visible.</em></h1>
+          <p class="lede">Inspect the weights behind Unicode collation. Compare, sort, and explain multilingual text using a reusable MoonBit core.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#lab">Open the lab <span>↓</span></a>
+            <a class="button ghost" href="https://github.com/CaptainK-65/moon-collate">View source ↗</a>
+          </div>
+          <dl class="facts">
+            <div><dt>38,785</dt><dd>DUCET mappings</dd></div>
+            <div><dt>964</dt><dd>contractions</dd></div>
+            <div><dt>5</dt><dd>weight levels</dd></div>
+          </dl>
+        </div>
+        <div class="orbit-card" aria-label="Collation levels illustration">
+          <div class="orbit orbit-outer"><span>IDENTICAL</span></div>
+          <div class="orbit orbit-middle"><span>TERTIARY</span></div>
+          <div class="orbit orbit-inner"><span>PRIMARY</span></div>
+          <div class="moon">Aa<br /><small>é é</small></div>
+          <div class="weight weight-a">21 E6</div>
+          <div class="weight weight-b">00 20</div>
+          <div class="weight weight-c">00 02</div>
+        </div>
+      </section>
+
+      <section id="lab" class="lab-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">Interactive playground</p><h2>Collation Lab</h2></div>
+          <p>Every result below is produced by the MoonBit library running in your browser.</p>
+        </div>
+
+        <div class="lab-grid">
+          <aside class="control-panel">
+            <div class="panel-heading"><span>01</span><h3>Configuration</h3></div>
+            <label>Strength
+              <select id="strength">
+                <option value="primary">Primary — base letters</option>
+                <option value="secondary">Secondary — accents</option>
+                <option value="tertiary" selected>Tertiary — case</option>
+                <option value="quaternary">Quaternary — variables</option>
+                <option value="identical">Identical — code points</option>
+              </select>
+            </label>
+            <label>Alternate handling
+              <select id="alternate">
+                <option value="non-ignorable">Non-ignorable</option>
+                <option value="shifted">Shifted</option>
+              </select>
+            </label>
+            <label>Case order
+              <select id="case-first">
+                <option value="off">Default</option>
+                <option value="upper">Upper first</option>
+                <option value="lower">Lower first</option>
+              </select>
+            </label>
+            <div class="switch-row"><div><strong>Numeric</strong><small>file2 before file10</small></div><label class="switch"><input id="numeric" type="checkbox" /><span></span></label></div>
+            <div class="switch-row"><div><strong>Backwards accents</strong><small>Reverse secondary level</small></div><label class="switch"><input id="backwards" type="checkbox" /><span></span></label></div>
+            <button id="reset-options" class="text-button">Reset configuration</button>
+          </aside>
+
+          <div class="workspace">
+            <div class="mode-tabs" role="tablist">
+              <button class="active" data-mode="compare" role="tab">Compare</button>
+              <button data-mode="sort" role="tab">Sort list</button>
+              <button data-mode="explain" role="tab">Explain</button>
+            </div>
+
+            <div id="compare-view" class="mode-view">
+              <div class="input-pair">
+                <label><span>Left string</span><textarea id="left-input" rows="3">resume</textarea></label>
+                <div id="comparison-badge" class="comparison-badge">?</div>
+                <label><span>Right string</span><textarea id="right-input" rows="3">résumé</textarea></label>
+              </div>
+              <div class="example-row"><span>Try</span><button data-example="cafe">Canonical equivalence</button><button data-example="files">Numeric filenames</button><button data-example="punctuation">Shifted punctuation</button><button data-example="languages">Mixed scripts</button></div>
+              <button id="compare-button" class="run-button">Compare strings <span>⌘ ↵</span></button>
+            </div>
+
+            <div id="sort-view" class="mode-view hidden">
+              <label><span>One value per line</span><textarea id="sort-input" rows="10">Ångström
+apple
+ábaco
+Zebra
+éclair
+eagle
+文件10
+文件2</textarea></label>
+              <button id="sort-button" class="run-button">Sort with MoonCollate <span>⌘ ↵</span></button>
+            </div>
+
+            <div id="explain-view" class="mode-view hidden">
+              <label><span>Text to inspect</span><textarea id="explain-input" rows="5">café</textarea></label>
+              <p class="field-note">The trace shows NFD normalization, mapping sources, collation elements, and the final multi-level key.</p>
+              <button id="explain-button" class="run-button">Explain collation <span>⌘ ↵</span></button>
+            </div>
+
+            <section class="result-panel" aria-live="polite">
+              <div class="panel-heading"><span>02</span><h3>Result</h3><button id="copy-result" disabled>Copy JSON</button></div>
+              <div id="empty-result" class="empty-result"><div class="empty-glyph">⌁</div><p>Run an operation to inspect the result.</p></div>
+              <div id="error-result" class="error-result hidden"></div>
+              <div id="result-content" class="result-content hidden">
+                <div id="result-summary" class="result-summary"></div>
+                <div id="sorted-list" class="sorted-list hidden"></div>
+                <div id="key-grid" class="key-grid"></div>
+                <details><summary>Raw JSON</summary><pre id="raw-json"></pre></details>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="principles">
+        <article><span>01</span><h3>Standards grounded</h3><p>Generated from Unicode 17.0.0 DUCET data with pinned provenance and reproducible tooling.</p></article>
+        <article><span>02</span><h3>Portable by design</h3><p>One MoonBit API targets native, JavaScript, WebAssembly, and wasm-gc consumers.</p></article>
+        <article><span>03</span><h3>Explainable weights</h3><p>Structured traces turn opaque ordering decisions into inspectable mappings and levels.</p></article>
+      </section>
+    </main>
+
+    <footer><span>MoonCollate v0.1.0</span><span>Apache-2.0 · Unicode License v3</span><span>Built with MoonBit</span></footer>
+    <script type="module" src="moon-collate.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

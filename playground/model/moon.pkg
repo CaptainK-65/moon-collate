@@ -1,0 +1,4 @@
+import {
+  "CaptainK-65/moon-collate" @collate,
+  "moonbitlang/core/json",
+}

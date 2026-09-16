@@ -1,0 +1,16 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "CaptainK-65/moon-collate/playground/model"
+
+// Values
+pub fn run(String, String, String, String) -> String
+
+// Errors
+
+// Types and methods
+type CompareResponse derive(ToJson)
+
+type ErrorResponse derive(ToJson)
+
+// Type aliases
+
+// Traits
