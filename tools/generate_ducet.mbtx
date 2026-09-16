@@ -1,0 +1,297 @@
+import {
+  "moonbitlang/async@0.20.2",
+  "moonbitlang/async@0.20.2/fs",
+  "moonbitlang/async@0.20.2/io",
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+}
+
+struct RawElement {
+  primary : Int
+  secondary : Int
+  tertiary : Int
+  variable : Bool
+}
+
+struct Mapping {
+  codepoints : Array[Int]
+  elements : Array[RawElement]
+}
+
+struct ImplicitRange {
+  first : Int
+  last : Int
+  lead : Int
+}
+
+fn parse_hex(value : StringView) -> Int raise {
+  @string.parse_int(value, base=16)
+}
+
+fn nonempty_hex_parts(value : StringView) -> Array[Int] raise {
+  let result : Array[Int] = []
+  for piece in value.to_owned().split(" ") {
+    let trimmed = piece.to_owned().trim()
+    if trimmed.length() > 0 {
+      result.push(parse_hex(trimmed))
+    }
+  }
+  result
+}
+
+fn parse_element(raw : StringView) -> RawElement? raise {
+  let text = raw.to_owned().trim().to_owned()
+  if text.length() < 2 {
+    return None
+  }
+  let marker = text[0]
+  if marker != ('.' : UInt16) && marker != ('*' : UInt16) {
+    return None
+  }
+  let fields : Array[Int] = []
+  let tail = text.unsafe_substring(start=1, end=text.length())
+  for field in tail.split(".") {
+    let trimmed = field.to_owned().trim()
+    if trimmed.length() > 0 {
+      fields.push(parse_hex(trimmed))
+    }
+  }
+  if fields.length() < 3 {
+    None
+  } else {
+    Some({
+      primary: fields[0],
+      secondary: fields[1],
+      tertiary: fields[2],
+      variable: marker == ('*' : UInt16),
+    })
+  }
+}
+
+fn parse_mapping(line : StringView) -> Mapping? raise {
+  guard line.to_owned().split_once(";") is Some((left, right)) else {
+    return None
+  }
+  let codepoints = nonempty_hex_parts(left)
+  if codepoints.length() == 0 {
+    return None
+  }
+  let elements : Array[RawElement] = []
+  for chunk in right.to_owned().split("[") {
+    guard chunk.to_owned().split_once("]") is Some((inside, _)) else {
+      continue
+    }
+    match parse_element(inside) {
+      Some(element) => elements.push(element)
+      None => ()
+    }
+  }
+  if elements.length() == 0 {
+    None
+  } else {
+    Some({ codepoints, elements })
+  }
+}
+
+fn parse_implicit(line : StringView) -> ImplicitRange? raise {
+  let text = line.to_owned().trim().to_owned()
+  if !text.has_prefix("@implicitweights") {
+    return None
+  }
+  guard text.split_once(";") is Some((range_part, lead_part)) else {
+    return None
+  }
+  let range_text = range_part.to_owned().trim().to_owned()
+  let pieces = range_text.split(" ").to_array()
+  if pieces.length() < 2 {
+    return None
+  }
+  guard pieces[pieces.length() - 1].to_owned().split_once("..") is Some((first, last)) else {
+    return None
+  }
+  Some({
+    first: parse_hex(first),
+    last: parse_hex(last),
+    lead: parse_hex(lead_part.to_owned().trim()),
+  })
+}
+
+fn write_int_array(
+  out : StringBuilder,
+  name : String,
+  values : Array[Int],
+) -> Unit {
+  out.write_string("let ")
+  out.write_string(name)
+  out.write_string(" : FixedArray[Int] = [\n")
+  for index, value in values {
+    if index % 12 == 0 {
+      out.write_string("  ")
+    }
+    out.write_string(value.to_string())
+    out.write_string(",")
+    if index % 12 == 11 || index + 1 == values.length() {
+      out.write_string("\n")
+    } else {
+      out.write_string(" ")
+    }
+  }
+  out.write_string("]\n\n///|\n")
+}
+
+fn flatten_mappings(
+  mappings : Array[Mapping],
+  keys : Array[Int],
+  key_starts : Array[Int],
+  key_lengths : Array[Int],
+  element_starts : Array[Int],
+  element_lengths : Array[Int],
+  primary : Array[Int],
+  secondary : Array[Int],
+  tertiary : Array[Int],
+  flags : Array[Int],
+) -> Unit {
+  for mapping in mappings {
+    key_starts.push(keys.length())
+    key_lengths.push(mapping.codepoints.length())
+    for codepoint in mapping.codepoints {
+      keys.push(codepoint)
+    }
+    element_starts.push(primary.length())
+    element_lengths.push(mapping.elements.length())
+    for element in mapping.elements {
+      primary.push(element.primary)
+      secondary.push(element.secondary)
+      tertiary.push(element.tertiary)
+      flags.push(if element.variable { 1 } else { 0 })
+    }
+  }
+}
+
+async fn main {
+  let args = @env.args()
+  let input = if args.length() > 1 {
+    args[1]
+  } else {
+    "third_party/unicode/uca-17.0.0/allkeys.txt"
+  }
+  let output = if args.length() > 2 { args[2] } else { "generated_ducet.mbt" }
+  let source = @fs.read_file(input).text()
+  let singles : Array[Mapping] = []
+  let contractions : Array[Mapping] = []
+  let implicit_ranges : Array[ImplicitRange] = []
+  for raw_line in source.split("\n") {
+    let uncommented = match raw_line.to_owned().split_once("#") {
+      Some((body, _)) => body
+      None => raw_line
+    }
+    let line = uncommented.to_owned().trim()
+    if line.length() == 0 {
+      continue
+    }
+    if line.to_owned().has_prefix("@implicitweights") {
+      match parse_implicit(line) {
+        Some(range) => implicit_ranges.push(range)
+        None => ()
+      }
+      continue
+    }
+    if line.to_owned().has_prefix("@") {
+      continue
+    }
+    match parse_mapping(line) {
+      Some(mapping) =>
+        if mapping.codepoints.length() == 1 {
+          singles.push(mapping)
+        } else {
+          contractions.push(mapping)
+        }
+      None => ()
+    }
+  }
+  singles.sort_by((left, right) => left.codepoints[0] - right.codepoints[0])
+  contractions.sort_by((left, right) => {
+    let first = left.codepoints[0] - right.codepoints[0]
+    if first != 0 {
+      first
+    } else {
+      right.codepoints.length() - left.codepoints.length()
+    }
+  })
+  let single_keys : Array[Int] = []
+  let single_key_starts : Array[Int] = []
+  let single_key_lengths : Array[Int] = []
+  let single_element_starts : Array[Int] = []
+  let single_element_lengths : Array[Int] = []
+  let single_primary : Array[Int] = []
+  let single_secondary : Array[Int] = []
+  let single_tertiary : Array[Int] = []
+  let single_flags : Array[Int] = []
+  flatten_mappings(
+    singles,
+    single_keys,
+    single_key_starts,
+    single_key_lengths,
+    single_element_starts,
+    single_element_lengths,
+    single_primary,
+    single_secondary,
+    single_tertiary,
+    single_flags,
+  )
+  let contraction_keys : Array[Int] = []
+  let contraction_key_starts : Array[Int] = []
+  let contraction_key_lengths : Array[Int] = []
+  let contraction_element_starts : Array[Int] = []
+  let contraction_element_lengths : Array[Int] = []
+  let contraction_primary : Array[Int] = []
+  let contraction_secondary : Array[Int] = []
+  let contraction_tertiary : Array[Int] = []
+  let contraction_flags : Array[Int] = []
+  flatten_mappings(
+    contractions,
+    contraction_keys,
+    contraction_key_starts,
+    contraction_key_lengths,
+    contraction_element_starts,
+    contraction_element_lengths,
+    contraction_primary,
+    contraction_secondary,
+    contraction_tertiary,
+    contraction_flags,
+  )
+  let implicit_first : Array[Int] = []
+  let implicit_last : Array[Int] = []
+  let implicit_lead : Array[Int] = []
+  for range in implicit_ranges {
+    implicit_first.push(range.first)
+    implicit_last.push(range.last)
+    implicit_lead.push(range.lead)
+  }
+  let out = StringBuilder(size_hint=source.length() * 2)
+  out.write_string("// Generated from Unicode 17.0.0 allkeys.txt. DO NOT EDIT.\n")
+  out.write_string("// Generator: tools/generate_ducet.mbtx\n\n///|\n")
+  write_int_array(out, "ducet_single_keys", single_keys)
+  write_int_array(out, "ducet_single_element_starts", single_element_starts)
+  write_int_array(out, "ducet_single_element_lengths", single_element_lengths)
+  write_int_array(out, "ducet_single_primary", single_primary)
+  write_int_array(out, "ducet_single_secondary", single_secondary)
+  write_int_array(out, "ducet_single_tertiary", single_tertiary)
+  write_int_array(out, "ducet_single_flags", single_flags)
+  write_int_array(out, "ducet_contraction_keys", contraction_keys)
+  write_int_array(out, "ducet_contraction_key_starts", contraction_key_starts)
+  write_int_array(out, "ducet_contraction_key_lengths", contraction_key_lengths)
+  write_int_array(out, "ducet_contraction_element_starts", contraction_element_starts)
+  write_int_array(out, "ducet_contraction_element_lengths", contraction_element_lengths)
+  write_int_array(out, "ducet_contraction_primary", contraction_primary)
+  write_int_array(out, "ducet_contraction_secondary", contraction_secondary)
+  write_int_array(out, "ducet_contraction_tertiary", contraction_tertiary)
+  write_int_array(out, "ducet_contraction_flags", contraction_flags)
+  write_int_array(out, "ducet_implicit_first", implicit_first)
+  write_int_array(out, "ducet_implicit_last", implicit_last)
+  write_int_array(out, "ducet_implicit_lead", implicit_lead)
+  @fs.write_file(output, out.to_string(), create_mode=CreateOrTruncate)
+  println(
+    "generated \{singles.length()} singles, \{contractions.length()} contractions, \{implicit_ranges.length()} implicit ranges",
+  )
+}
