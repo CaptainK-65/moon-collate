@@ -119,10 +119,11 @@ fn build_key(
 }
 
 ///|
-fn Collator::analyze(self : Collator, text : String) -> CollationTrace {
-  let normalized = nfd_unicode_17(text)
-  let codepoints = codepoints_of(normalized)
-  let steps : Array[TraceStep] = []
+fn Collator::collect_elements(
+  self : Collator,
+  codepoints : Array[Int],
+  steps : Array[TraceStep]?,
+) -> Array[CollationElement] {
   let elements : Array[CollationElement] = []
   let mut at = 0
   while at < codepoints.length() {
@@ -134,13 +135,26 @@ fn Collator::analyze(self : Collator, text : String) -> CollationTrace {
     for element in found.elements {
       elements.push(element)
     }
-    steps.push({
-      input: found.input,
-      elements: found.elements,
-      source: found.source,
-    })
+    match steps {
+      Some(trace) =>
+        trace.push({
+          input: found.input,
+          elements: found.elements,
+          source: found.source,
+        })
+      None => ()
+    }
     at = at + found.consumed
   }
+  elements
+}
+
+///|
+fn Collator::analyze(self : Collator, text : String) -> CollationTrace {
+  let normalized = nfd_unicode_17(text)
+  let codepoints = codepoints_of(normalized)
+  let steps : Array[TraceStep] = []
+  let elements = self.collect_elements(codepoints, Some(steps))
   {
     original: text,
     normalized,
@@ -152,7 +166,9 @@ fn Collator::analyze(self : Collator, text : String) -> CollationTrace {
 ///|
 /// Produce a stable multi-level UCA sort key for `text`.
 pub fn Collator::sort_key(self : Collator, text : String) -> SortKey {
-  self.analyze(text).sort_key()
+  let normalized = nfd_unicode_17(text)
+  let codepoints = codepoints_of(normalized)
+  build_key(self, self.collect_elements(codepoints, None), codepoints)
 }
 
 ///|

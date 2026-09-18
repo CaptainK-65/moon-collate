@@ -8,23 +8,35 @@ MoonCollate targets Unicode Collation Algorithm 17.0.0 and the matching DUCET.
 | --- | --- | --- |
 | Non-ignorable short | `CollationTest_NON_IGNORABLE_SHORT.txt` | 100% ordered |
 | Shifted short | `CollationTest_SHIFTED_SHORT.txt` | 100% ordered |
+| Non-ignorable full | downloaded checksum-pinned fixture | 100% ordered |
+| Shifted full | downloaded checksum-pinned fixture | 100% ordered |
 | Compare/key equivalence | generated property corpus | zero mismatches |
 | Canonical equivalence | focused normalization corpus | zero mismatches |
 | Backend portability | native, js, wasm, wasm-gc | check and tests pass |
 
-Latest local release-candidate run (2026-09-16):
+Latest local release-candidate run (2026-09-18):
 
 - Non-ignorable short: **208,039 adjacent pairs, 0 failures**.
 - Shifted short: **229,829 adjacent pairs, 0 failures**.
-- Focused library and browser-model tests: **26 tests, 0 failures** on native.
+- Non-ignorable full: **208,039 adjacent pairs, 0 failures**.
+- Shifted full: **229,829 adjacent pairs, 0 failures**.
+- Focused tests: **54 per portable backend and 58 on native, 0 failures**.
+- Coverage audit: **16 uncovered executable lines across 6 files**.
 
-The CI workflow reruns both official profiles. These figures describe the
-committed `SHORT` fixtures, not the uncommitted full fixtures.
+The regular CI workflow reruns both committed short profiles. The manual
+`Full conformance` workflow downloads Unicode's official archive, verifies the
+pinned SHA-256 before extraction, then runs both full profiles. Full fixtures
+are intentionally not committed because of their size.
 
-The full Unicode conformance files are retained as an extended validation
-target but are not committed because of their size. A release claim must state
-exactly which profile was executed. Known failures may not be hidden behind a
-general “UCA compliant” label.
+A release claim must state exactly which profile was executed. Known failures
+may not be hidden behind a general “UCA compliant” label.
+
+```text
+moon run --target native cmd/conformance -- --short
+moon run --target native cmd/conformance -- --short --shifted
+moon run --target native cmd/conformance -- --full
+moon run --target native cmd/conformance -- --full --shifted
+```
 
 ## Pinned upstream data
 

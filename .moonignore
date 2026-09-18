@@ -1,0 +1,11 @@
+/.github/
+/.githooks/
+/AGENTS.md
+/APPLICATION.md
+/cmd/conformance/
+/docs/assets/
+/playground/
+/third_party/
+/tools/
+**/*_test.mbt
+**/*_wbtest.mbt

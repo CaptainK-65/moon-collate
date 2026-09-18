@@ -1,0 +1,183 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "CaptainK-65/moon-collate"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub const UCA_VERSION : String = "17.0.0"
+
+pub const UNICODE_VERSION : String = "17.0.0"
+
+pub const VERSION : String = "0.2.0"
+
+pub fn default_collator() -> Collator
+
+// Errors
+
+// Types and methods
+pub(all) enum AlternateHandling {
+  NonIgnorable
+  Shifted
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum CaseFirst {
+  CaseOff
+  UpperFirst
+  LowerFirst
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct CollationElement {
+  primary : Int
+  secondary : Int
+  tertiary : Int
+  quaternary : Int
+  variable : Bool
+} derive(Eq, ToJson, @debug.Debug)
+pub fn CollationElement::is_variable(Self) -> Bool
+pub fn CollationElement::new(primary~ : Int, secondary~ : Int, tertiary~ : Int, quaternary? : Int, variable? : Bool) -> Self
+pub fn CollationElement::primary(Self) -> Int
+pub fn CollationElement::quaternary(Self) -> Int
+pub fn CollationElement::secondary(Self) -> Int
+pub fn CollationElement::tertiary(Self) -> Int
+
+pub(all) struct CollationGroup {
+  representative : String
+  values : Array[String]
+} derive(Eq, ToJson, @debug.Debug)
+pub fn CollationGroup::length(Self) -> Int
+pub fn CollationGroup::representative(Self) -> String
+pub fn CollationGroup::values(Self) -> Array[String]
+
+pub(all) struct CollationIndex {
+  collator : Collator
+  indexed_values : Array[String]
+  indexed_keys : Array[SortKey]
+}
+pub fn CollationIndex::contains(Self, String) -> Bool
+pub fn CollationIndex::count_equal(Self, String) -> Int
+pub fn CollationIndex::equal_range(Self, String) -> Array[String]
+pub fn CollationIndex::is_empty(Self) -> Bool
+pub fn CollationIndex::length(Self) -> Int
+pub fn CollationIndex::lower_bound(Self, String) -> Int
+pub fn CollationIndex::new(Collator, Array[String]) -> Self
+pub fn CollationIndex::range(Self, String, String) -> Array[String]
+pub fn CollationIndex::upper_bound(Self, String) -> Int
+pub fn CollationIndex::values(Self) -> Array[String]
+
+pub(all) struct CollationTrace {
+  original : String
+  normalized : String
+  steps : Array[TraceStep]
+  key : SortKey
+} derive(Eq, ToJson, @debug.Debug)
+pub fn CollationTrace::normalized(Self) -> String
+pub fn CollationTrace::original(Self) -> String
+pub fn CollationTrace::sort_key(Self) -> SortKey
+pub fn CollationTrace::steps(Self) -> Array[TraceStep]
+
+pub(all) struct Collator {
+  strength : Strength
+  alternate : AlternateHandling
+  case_first : CaseFirst
+  backwards_secondary : Bool
+  numeric : Bool
+}
+pub fn Collator::alternate_handling(Self) -> AlternateHandling
+pub fn Collator::case_first(Self) -> CaseFirst
+pub fn Collator::compare(Self, String, String) -> Ordering
+pub fn Collator::compare_detailed(Self, String, String) -> ComparisonReport
+pub fn Collator::deduplicate(Self, Array[String]) -> Array[String]
+pub fn Collator::equivalent(Self, String, String) -> Bool
+pub fn Collator::explain(Self, String) -> CollationTrace
+pub fn Collator::group_equal(Self, Array[String]) -> Array[CollationGroup]
+pub fn Collator::is_backwards_secondary(Self) -> Bool
+pub fn Collator::is_numeric(Self) -> Bool
+pub fn Collator::is_sorted(Self, Array[String]) -> Bool
+pub fn Collator::less(Self, String, String) -> Bool
+pub fn Collator::maximum(Self, Array[String]) -> String?
+pub fn Collator::minimum(Self, Array[String]) -> String?
+pub fn Collator::new(strength? : Strength, alternate? : AlternateHandling, case_first? : CaseFirst, backwards_secondary? : Bool, numeric? : Bool) -> Self
+pub fn Collator::sort(Self, Array[String]) -> Array[String]
+pub fn Collator::sort_key(Self, String) -> SortKey
+pub fn Collator::strength(Self) -> Strength
+pub fn Collator::with_alternate(Self, AlternateHandling) -> Self
+pub fn Collator::with_backwards_secondary(Self, Bool) -> Self
+pub fn Collator::with_case_first(Self, CaseFirst) -> Self
+pub fn Collator::with_numeric(Self, Bool) -> Self
+pub fn Collator::with_strength(Self, Strength) -> Self
+
+pub(all) struct ComparisonDifference {
+  level : DifferenceLevel
+  index : Int
+  left_weight : Int
+  right_weight : Int
+} derive(Eq, ToJson, @debug.Debug)
+pub fn ComparisonDifference::index(Self) -> Int
+pub fn ComparisonDifference::left_weight(Self) -> Int
+pub fn ComparisonDifference::level(Self) -> DifferenceLevel
+pub fn ComparisonDifference::right_weight(Self) -> Int
+
+pub(all) struct ComparisonReport {
+  ordering : Ordering
+  difference : ComparisonDifference?
+  left_key : SortKey
+  right_key : SortKey
+} derive(Eq, ToJson, @debug.Debug)
+pub fn ComparisonReport::difference(Self) -> ComparisonDifference?
+pub fn ComparisonReport::left_key(Self) -> SortKey
+pub fn ComparisonReport::ordering(Self) -> Ordering
+pub fn ComparisonReport::right_key(Self) -> SortKey
+
+pub(all) enum DifferenceLevel {
+  PrimaryLevel
+  SecondaryLevel
+  TertiaryLevel
+  QuaternaryLevel
+  IdenticalLevel
+} derive(Eq, ToJson, @debug.Debug)
+pub fn DifferenceLevel::to_string(Self) -> String
+
+pub(all) enum Ordering {
+  Less
+  Equal
+  Greater
+} derive(Eq, ToJson, @debug.Debug)
+pub fn Ordering::to_string(Self) -> String
+
+pub(all) struct SortKey {
+  primary : Array[Int]
+  secondary : Array[Int]
+  tertiary : Array[Int]
+  quaternary : Array[Int]
+  identical : Array[Int]
+} derive(Eq, ToJson, @debug.Debug)
+pub fn SortKey::flatten(Self, Strength) -> Array[Int]
+pub fn SortKey::identical(Self) -> Array[Int]
+pub fn SortKey::primary(Self) -> Array[Int]
+pub fn SortKey::quaternary(Self) -> Array[Int]
+pub fn SortKey::secondary(Self) -> Array[Int]
+pub fn SortKey::tertiary(Self) -> Array[Int]
+pub fn SortKey::to_hex(Self, Strength) -> String
+
+pub(all) enum Strength {
+  Primary
+  Secondary
+  Tertiary
+  Quaternary
+  Identical
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct TraceStep {
+  input : Array[Int]
+  elements : Array[CollationElement]
+  source : String
+} derive(Eq, ToJson, @debug.Debug)
+pub fn TraceStep::elements(Self) -> Array[CollationElement]
+pub fn TraceStep::input(Self) -> Array[Int]
+pub fn TraceStep::source(Self) -> String
+
+// Type aliases
+
+// Traits

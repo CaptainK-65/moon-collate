@@ -8,4 +8,4 @@ pub const UCA_VERSION : String = "17.0.0"
 
 ///|
 /// MoonCollate library version.
-pub const VERSION : String = "0.1.0"
+pub const VERSION : String = "0.2.0"

@@ -11,41 +11,50 @@ permissions:
 
 jobs:
   validate:
-    name: Check and test all backends
-    runs-on: ubuntu-latest
+    name: Check and test / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
       - name: Install MoonBit
-        run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+        uses: hustcer/setup-moonbit@v1.23
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Resolve dependencies
         run: moon update
       - name: Record toolchain
         run: moon version --all
-      - name: Check formatting
-        run: moon fmt --check
       - name: Check every backend
         run: moon check --target all
       - name: Test every backend
         run: moon test --target all
+      - name: Check formatting
+        if: runner.os == 'Linux'
+        run: moon fmt --check
       - name: Validate public interface
+        if: runner.os == 'Linux'
         run: moon info
+      - name: Reject public interface drift
+        if: runner.os == 'Linux'
+        run: git diff --exit-code -- pkg.generated.mbti
 
   conformance:
-    name: Unicode 17 conformance
+    name: Unicode 17 short conformance
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - name: Install MoonBit
-        run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+        uses: hustcer/setup-moonbit@v1.23
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: moon update
       - name: Non-ignorable short profile
-        run: moon run --target native cmd/conformance
+        run: moon run --target native cmd/conformance -- --non-ignorable --short
       - name: Shifted short profile
-        run: moon run --target native cmd/conformance -- --shifted
+        run: moon run --target native cmd/conformance -- --shifted --short
 
   generated-data:
     name: Generated data is reproducible
@@ -53,9 +62,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install MoonBit
-        run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+        uses: hustcer/setup-moonbit@v1.23
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Resolve script dependencies
         run: moon update
       - name: Rebuild Unicode tables
@@ -65,3 +74,18 @@ jobs:
           moon fmt
       - name: Reject stale generated output
         run: git diff --exit-code -- generated_ducet.mbt generated_normalization.mbt
+
+  browser-contract:
+    name: Browser adapter contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install MoonBit
+        uses: hustcer/setup-moonbit@v1.23
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: moon update
+      - name: Build MoonBit browser adapter
+        run: moon build --target js --release playground/app
+      - name: Verify JavaScript boundary
+        run: node playground/contract_test.mjs _build/js/release/build/playground/app/app.js

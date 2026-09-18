@@ -1,6 +1,6 @@
 # MoonCollate ecosystem overlap audit
 
-Audit timestamp: 2026-09-16 10:27 UTC.
+Audit refreshed: 2026-09-18.
 
 ## Decision
 
@@ -42,8 +42,9 @@ content negotiation, and MessageFormat.
 ## Ongoing gate
 
 This audit describes public indexed code, not private or undiscoverable work.
-Before the `v0.1.0` release, the same searches must be repeated and this file
-updated. Any newly discovered maintained equivalent blocks release until the
+Before each release, the same searches must be repeated and this file updated.
+The v0.2.0 review found no newly indexed MoonBit UCA/DUCET implementation. Any
+newly discovered maintained equivalent blocks release until the
 relationship and non-overlapping scope are documented.
 
 ## Version-alignment note

@@ -13,9 +13,11 @@ Default Unicode Collation Element Table（DUCET）。它解决 Unicode 字符串
 与 expansion、非连续 contraction、隐式权重、Primary 至 Identical 多级比较、
 Non-Ignorable/Shifted 策略、结构化 Sort Key、数值排序、可解释比较轨迹、稳定
 集合排序与缓存索引、CLI，以及复用同一 MoonBit 核心的浏览器 Collation Lab。
-项目已经通过 Unicode 官方短版 CollationTest：Non-Ignorable 208,039 对、
-Shifted 229,829 对，均为 0 失败；39 项测试在 native、js、wasm、wasm-gc 四个
-后端全部通过。
+项目已经通过 Unicode 官方短版与完整 CollationTest：Non-Ignorable 208,039 对、
+Shifted 229,829 对，均为 0 失败；54 项可移植测试在 js、wasm、wasm-gc 后端通过，
+native 加上专项验证共 58 项，全部为 0 失败。v0.2.0 还增加了区间查询、无结果数组
+分配的等值计数、普通 Sort Key 快路径，以及 Linux/macOS/Windows CI 矩阵与 API
+漂移检查。
 
 本项目为依据 Unicode 标准与公开数据完成的原创实现，不是 ICU 或其他语言库的
 代码移植。MoonBit 现有的 normalization、UCD、bidi、grapheme、i18n 与排版库
