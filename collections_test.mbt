@@ -48,6 +48,13 @@ test "minimum and maximum support empty and populated arrays" {
   assert_eq(collator.maximum([]), None)
   assert_eq(collator.minimum(["z", "a", "m"]), Some("a"))
   assert_eq(collator.maximum(["z", "a", "m"]), Some("z"))
+  assert_eq(collator.maximum(["a", "m", "z"]), Some("z"))
+}
+
+///|
+test "stable sort handles collation-equal neighbors" {
+  let collator = default_collator().with_strength(Strength::Primary)
+  assert_eq(collator.sort(["é", "E", "e"]), ["é", "E", "e"])
 }
 
 ///|

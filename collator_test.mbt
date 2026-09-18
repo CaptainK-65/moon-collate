@@ -46,3 +46,29 @@ test "explanation exposes normalization and mappings" {
   assert_eq(trace.normalized(), "e\u{0301}")
   assert_true(trace.steps().length() > 0)
 }
+
+///|
+test "case-first and backwards-secondary options affect keys" {
+  let upper = default_collator().with_case_first(CaseFirst::UpperFirst)
+  let lower = default_collator().with_case_first(CaseFirst::LowerFirst)
+  assert_eq(upper.compare("A", "a"), Ordering::Less)
+  assert_eq(lower.compare("A", "a"), Ordering::Greater)
+  let forward_key = default_collator().sort_key("éà").secondary()
+  let backward_key = default_collator()
+    .with_backwards_secondary(true)
+    .sort_key("éà")
+    .secondary()
+  assert_eq(backward_key[0], forward_key[forward_key.length() - 1])
+}
+
+///|
+test "quaternary and identical strengths reach their decisive levels" {
+  let quaternary = default_collator()
+    .with_alternate(AlternateHandling::Shifted)
+    .with_strength(Strength::Quaternary)
+  assert_true(quaternary.compare("coop", "co-op") != Ordering::Equal)
+  let identical = default_collator().with_strength(Strength::Identical)
+  assert_eq(identical.compare("same", "same"), Ordering::Equal)
+  assert_true(identical.less("alpha", "beta"))
+  assert_false(identical.less("beta", "alpha"))
+}

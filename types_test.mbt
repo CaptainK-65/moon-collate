@@ -31,3 +31,39 @@ test "collator builders leave the original immutable" {
   assert_true(configured.is_backwards_secondary())
   assert_true(configured.is_numeric())
 }
+
+///|
+test "public key and trace accessors expose defensive values" {
+  let collator = default_collator()
+  let key = collator.sort_key("é")
+  assert_true(key.primary().length() > 0)
+  assert_true(key.secondary().length() > 0)
+  assert_true(key.tertiary().length() > 0)
+  assert_true(key.identical().length() > 0)
+  let shifted = collator
+    .with_alternate(AlternateHandling::Shifted)
+    .sort_key("-")
+  assert_true(shifted.quaternary().length() > 0)
+  let trace = collator.explain("é")
+  assert_eq(trace.sort_key(), key)
+  let steps = trace.steps()
+  assert_true(steps[0].input().length() > 0)
+  assert_true(steps[0].elements().length() > 0)
+  assert_true(steps[0].source().length() > 0)
+}
+
+///|
+test "collation element accessors preserve explicit weights" {
+  let element = CollationElement::new(
+    primary=1,
+    secondary=2,
+    tertiary=3,
+    quaternary=4,
+    variable=true,
+  )
+  assert_eq(element.primary(), 1)
+  assert_eq(element.secondary(), 2)
+  assert_eq(element.tertiary(), 3)
+  assert_eq(element.quaternary(), 4)
+  assert_true(element.is_variable())
+}

@@ -49,6 +49,30 @@ test "flatten includes only requested levels" {
   assert_eq(primary[primary.length() - 1], 0)
   assert_eq(tertiary[tertiary.length() - 1], 0)
   assert_true(tertiary.length() > primary.length())
+  let quaternary = key.flatten(Strength::Quaternary)
+  let identical = key.flatten(Strength::Identical)
+  assert_true(quaternary.length() > tertiary.length())
+  assert_true(identical.length() > quaternary.length())
+}
+
+///|
+test "detailed report covers shifted quaternary and identical equality" {
+  let shifted = default_collator()
+    .with_alternate(AlternateHandling::Shifted)
+    .with_strength(Strength::Quaternary)
+  let report = shifted.compare_detailed("coop", "co-op")
+  guard report.difference() is Some(difference) else {
+    fail("expected a quaternary difference")
+  }
+  assert_eq(difference.level(), DifferenceLevel::QuaternaryLevel)
+  let quaternary_equal = shifted.compare_detailed("same", "same")
+  assert_eq(quaternary_equal.ordering(), Ordering::Equal)
+  assert_eq(quaternary_equal.difference(), None)
+  let identical = default_collator()
+    .with_strength(Strength::Identical)
+    .compare_detailed("same", "same")
+  assert_eq(identical.ordering(), Ordering::Equal)
+  assert_eq(identical.difference(), None)
 }
 
 ///|
