@@ -7,7 +7,7 @@ into comparable collation elements and reusable sort keys using the Unicode
 Collation Algorithm (UCA) and the Default Unicode Collation Element Table
 (DUCET).
 
-> Status: `v0.1.0`. Conformance claims are made only for test profiles recorded
+> Status: `v0.2.0`. Conformance claims are made only for test profiles recorded
 > in [`docs/conformance.md`](docs/conformance.md).
 
 [![CI](https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml/badge.svg)](https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml)
@@ -48,6 +48,12 @@ non-ignorable and 229,829 shifted adjacent pairs with zero failures. See the
 
 ## Quick start
 
+Add the published package to another MoonBit module:
+
+```text
+moon add CaptainK-65/moon-collate@0.2.0
+```
+
 ```mbt check
 ///|
 test {
@@ -66,7 +72,7 @@ moon run cmd/main -- explain café
 
 ## Scope boundary
 
-Version `0.1.0` implements the Unicode 17.0.0 default collation profile. It is
+Version `0.2.0` implements the Unicode 17.0.0 default collation profile. It is
 not a database, a text shaping engine, or a full ICU/CLDR locale tailoring
 replacement. See [`docs/ecosystem-audit.md`](docs/ecosystem-audit.md) for the
 public ecosystem overlap audit and [`docs/limitations.md`](docs/limitations.md)
@@ -80,6 +86,8 @@ moon check --target all
 moon test --target all
 moon run --target native cmd/conformance
 moon run --target native cmd/conformance -- --shifted
+moon run --target native cmd/conformance -- --full
+moon run --target native cmd/conformance -- --full --shifted
 moon info
 moon fmt
 ```

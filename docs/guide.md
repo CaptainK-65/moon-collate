@@ -103,7 +103,9 @@ test {
 
 `CollationIndex` sorts once and caches keys. Its binary-search operations are
 appropriate for autocomplete dictionaries, table filters, and in-memory
-indexes that execute repeated equality or insertion-position queries.
+indexes that execute repeated equality, bounded-range, or insertion-position
+queries. `count_equal` avoids allocating a result array; `range` returns the
+half-open interval `[lower, upper)` under the index's configured collation.
 
 ```mbt check
 test {
@@ -116,6 +118,8 @@ test {
   )
   assert_true(index.contains("e"))
   assert_eq(index.equal_range("e"), ["é", "E"])
+  assert_eq(index.count_equal("e"), 2)
+  assert_eq(index.range("e", "Zulu"), ["é", "E"])
 }
 ```
 

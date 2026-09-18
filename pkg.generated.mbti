@@ -10,7 +10,7 @@ pub const UCA_VERSION : String = "17.0.0"
 
 pub const UNICODE_VERSION : String = "17.0.0"
 
-pub const VERSION : String = "0.1.0"
+pub const VERSION : String = "0.2.0"
 
 pub fn default_collator() -> Collator
 
