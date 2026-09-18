@@ -33,18 +33,75 @@ fn parse_test_string(line : StringView) -> String? {
 }
 
 ///|
+enum FixtureProfile {
+  Short
+  Full
+} derive(Debug, Eq)
+
+///|
+struct ConformanceOptions {
+  shifted : Bool
+  profile : FixtureProfile
+  fixture : String?
+} derive(Debug, Eq)
+
+///|
+fn default_fixture(shifted : Bool, profile : FixtureProfile) -> String {
+  let name = match (shifted, profile) {
+    (true, Short) => "CollationTest_SHIFTED_SHORT.txt"
+    (true, Full) => "CollationTest_SHIFTED.txt"
+    (false, Short) => "CollationTest_NON_IGNORABLE_SHORT.txt"
+    (false, Full) => "CollationTest_NON_IGNORABLE.txt"
+  }
+  "third_party/unicode/uca-17.0.0/collation-test/CollationTest/" + name
+}
+
+///|
+fn parse_options(args : Array[String]) -> ConformanceOptions? {
+  let mut shifted = false
+  let mut profile = FixtureProfile::Short
+  let mut fixture : String? = None
+  let mut index = 1
+  while index < args.length() {
+    match args[index] {
+      "--shifted" => shifted = true
+      "--non-ignorable" => shifted = false
+      "--short" => profile = FixtureProfile::Short
+      "--full" => profile = FixtureProfile::Full
+      "--fixture" => {
+        if index + 1 >= args.length() {
+          return None
+        }
+        index = index + 1
+        fixture = Some(args[index])
+      }
+      value => {
+        if value.has_prefix("--") || fixture is Some(_) {
+          return None
+        }
+        fixture = Some(value)
+      }
+    }
+    index = index + 1
+  }
+  Some({ shifted, profile, fixture, })
+}
+
+///|
+fn usage() -> String {
+  "usage: conformance [--shifted|--non-ignorable] [--short|--full] " +
+  "[--fixture PATH]"
+}
+
+///|
 async fn main {
   let args = @env.args()
-  let shifted = args.length() > 1 && args[1] == "--shifted"
-  let path = if shifted {
-    "third_party/unicode/uca-17.0.0/collation-test/CollationTest/CollationTest_SHIFTED_SHORT.txt"
-  } else if args.length() > 1 {
-    args[1]
-  } else {
-    "third_party/unicode/uca-17.0.0/collation-test/CollationTest/CollationTest_NON_IGNORABLE_SHORT.txt"
-  }
+  guard parse_options(args) is Some(options) else { fail(usage()) }
+  let path = options.fixture.unwrap_or(
+    default_fixture(options.shifted, options.profile),
+  )
   let content = @fs.read_file(path).text()
-  let collator = if shifted {
+  let collator = if options.shifted {
     @collate.default_collator().with_alternate(
       @collate.AlternateHandling::Shifted,
     )

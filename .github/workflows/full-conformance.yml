@@ -1,0 +1,34 @@
+name: Unicode 17 Full Conformance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-conformance:
+    name: Full Unicode 17 profiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Resolve dependencies
+        run: moon update
+      - name: Download pinned Unicode 17 fixtures
+        working-directory: third_party/unicode/uca-17.0.0
+        run: curl -fsSLo CollationTest.zip https://www.unicode.org/Public/17.0.0/uca/CollationTest.zip
+      - name: Verify fixture archive
+        working-directory: third_party/unicode/uca-17.0.0
+        run: echo "9ba92cb7627c2d09ba537dc2035d006f44f0cafb4e2198f147897fdd9d71bb10  CollationTest.zip" | sha256sum --check
+      - name: Extract full fixtures
+        working-directory: third_party/unicode/uca-17.0.0
+        run: unzip -q -o CollationTest.zip -d collation-test
+      - name: Non-ignorable full profile
+        run: moon run --target native cmd/conformance -- --non-ignorable --full
+      - name: Shifted full profile
+        run: moon run --target native cmd/conformance -- --shifted --full
