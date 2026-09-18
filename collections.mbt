@@ -285,7 +285,39 @@ pub fn CollationIndex::equal_range(
 }
 
 ///|
-pub fn CollationIndex::contains(self : CollationIndex, target : String) -> Bool {
+/// Return values in the half-open collation interval `[lower, upper)`.
+///
+/// An empty array is returned when the bounds compare equal or are reversed.
+pub fn CollationIndex::range(
+  self : CollationIndex,
+  lower : String,
+  upper : String,
+) -> Array[String] {
+  let lower_key = self.collator.sort_key(lower)
+  let upper_key = self.collator.sort_key(upper)
+  if self.collator.compare_keys(lower_key, upper_key) != Less {
+    return []
+  }
+  let first = self.lower_bound_key(lower_key)
+  let last = self.lower_bound_key(upper_key)
+  let result : Array[String] = []
+  for index = first; index < last; index = index + 1 {
+    result.push(self.indexed_values[index])
+  }
+  result
+}
+
+///|
+/// Count values equal to `target` without allocating an equal-range array.
+pub fn CollationIndex::count_equal(
+  self : CollationIndex,
+  target : String,
+) -> Int {
   let key = self.collator.sort_key(target)
-  self.lower_bound_key(key) < self.upper_bound_key(key)
+  self.upper_bound_key(key) - self.lower_bound_key(key)
+}
+
+///|
+pub fn CollationIndex::contains(self : CollationIndex, target : String) -> Bool {
+  self.count_equal(target) > 0
 }
