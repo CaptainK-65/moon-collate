@@ -127,17 +127,14 @@ pub fn Collator::group_equal(
   let entries = self.keyed(values)
   self.sort_keyed(entries)
   let groups : Array[CollationGroup] = []
+  let mut previous_key : SortKey? = None
   for entry in entries {
-    if groups.length() == 0 {
-      groups.push({ representative: entry.value, values: [entry.value], })
-    } else {
-      let last = groups.length() - 1
-      if self.compare(groups[last].representative, entry.value) == Equal {
-        groups[last].values.push(entry.value)
-      } else {
-        groups.push({ representative: entry.value, values: [entry.value], })
-      }
+    match previous_key {
+      Some(key) if self.compare_keys(key, entry.key) == Equal =>
+        groups[groups.length() - 1].values.push(entry.value)
+      _ => groups.push({ representative: entry.value, values: [entry.value], })
     }
+    previous_key = Some(entry.key)
   }
   groups
 }
@@ -158,9 +155,12 @@ pub fn Collator::minimum(self : Collator, values : Array[String]) -> String? {
     return None
   }
   let mut best = values[0]
+  let mut best_key = self.sort_key(best)
   for index = 1; index < values.length(); index = index + 1 {
-    if self.compare(values[index], best) == Less {
+    let candidate_key = self.sort_key(values[index])
+    if self.compare_keys(candidate_key, best_key) == Less {
       best = values[index]
+      best_key = candidate_key
     }
   }
   Some(best)
@@ -173,9 +173,12 @@ pub fn Collator::maximum(self : Collator, values : Array[String]) -> String? {
     return None
   }
   let mut best = values[0]
+  let mut best_key = self.sort_key(best)
   for index = 1; index < values.length(); index = index + 1 {
-    if self.compare(values[index], best) == Greater {
+    let candidate_key = self.sort_key(values[index])
+    if self.compare_keys(candidate_key, best_key) == Greater {
       best = values[index]
+      best_key = candidate_key
     }
   }
   Some(best)
@@ -283,5 +286,6 @@ pub fn CollationIndex::equal_range(
 
 ///|
 pub fn CollationIndex::contains(self : CollationIndex, target : String) -> Bool {
-  self.lower_bound(target) < self.upper_bound(target)
+  let key = self.collator.sort_key(target)
+  self.lower_bound_key(key) < self.upper_bound_key(key)
 }
