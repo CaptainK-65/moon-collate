@@ -1,0 +1,48 @@
+import {
+  "moonbitlang/async@0.21.3",
+  "moonbitlang/async@0.21.3/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+}
+
+///|
+fn parse_version(raw : String) -> (Int, Int, Int) raise {
+  let token = raw.trim().split(" ").to_array()[0]
+  guard token.strip_prefix("v") is Some(without_prefix) else {
+    fail("unexpected moonc version: \{raw}")
+  }
+  let core = without_prefix.split("+").to_array()[0]
+  guard core.split(".").to_array() is [major, minor, patch] else {
+    fail("unexpected moonc version: \{raw}")
+  }
+  (
+    @string.parse_int(major),
+    @string.parse_int(minor),
+    @string.parse_int(patch),
+  )
+}
+
+///|
+fn is_supported(version : (Int, Int, Int)) -> Bool {
+  let (major, minor, patch) = version
+  major > 0 ||
+  (major == 0 && minor > 10) ||
+  (major == 0 && minor == 10 && patch >= 14)
+}
+
+///|
+async fn main {
+  let args = @env.args()
+  let raw = if args.length() > 1 {
+    args[1]
+  } else {
+    let output = @shell.Cmd("moonc", ["-v"]).output()
+    output.check()
+    output.stdout()
+  }
+  let version = parse_version(raw)
+  if !is_supported(version) {
+    fail("MoonCollate requires moonc >= 0.10.14; found \{raw.trim()}")
+  }
+  println("toolchain accepted: moonc \{raw.trim()} (minimum 0.10.14)")
+}
