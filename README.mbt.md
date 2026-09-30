@@ -1,13 +1,13 @@
 # MoonCollate
 
-![MoonCollate — Unicode order, made visible](docs/assets/mooncollate-cover.png)
+![MoonCollate — Unicode order, made visible](https://raw.githubusercontent.com/CaptainK-65/moon-collate/main/docs/assets/mooncollate-cover.png)
 
 MoonCollate is a pure MoonBit Unicode collation toolkit. It turns Unicode text
 into comparable collation elements and reusable sort keys using the Unicode
 Collation Algorithm (UCA) and the Default Unicode Collation Element Table
 (DUCET).
 
-> Status: `v0.2.0`. Conformance claims are made only for test profiles recorded
+> Status: `v0.2.1`. Requires `moonc >= 0.10.14`. Conformance claims are made only for test profiles recorded
 > in [`docs/conformance.md`](docs/conformance.md).
 
 [![CI](https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml/badge.svg)](https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml)
@@ -51,7 +51,7 @@ non-ignorable and 229,829 shifted adjacent pairs with zero failures. See the
 Add the published package to another MoonBit module:
 
 ```text
-moon add CaptainK-65/moon-collate@0.2.0
+moon add CaptainK-65/moon-collate@0.2.1
 ```
 
 ```mbt check
@@ -68,11 +68,12 @@ test {
 moon run cmd/main -- compare resume résumé
 moon run cmd/main -- sort --numeric file10 file2 file1
 moon run cmd/main -- explain café
+moon run examples/quickstart
 ```
 
 ## Scope boundary
 
-Version `0.2.0` implements the Unicode 17.0.0 default collation profile. It is
+Version `0.2.1` implements the Unicode 17.0.0 default collation profile. It is
 not a database, a text shaping engine, or a full ICU/CLDR locale tailoring
 replacement. See [`docs/ecosystem-audit.md`](docs/ecosystem-audit.md) for the
 public ecosystem overlap audit and [`docs/limitations.md`](docs/limitations.md)
@@ -83,7 +84,9 @@ for explicit non-goals.
 ```text
 moon update
 moon check --target all
+moon build --target all
 moon test --target all
+moon run examples/quickstart
 moon run --target native cmd/conformance
 moon run --target native cmd/conformance -- --shifted
 moon run --target native cmd/conformance -- --full

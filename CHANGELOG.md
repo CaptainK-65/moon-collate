@@ -2,6 +2,16 @@
 
 All notable changes follow semantic versioning.
 
+## 0.2.1 — 2026-09-30
+
+- Require and automatically verify `moonc >= 0.10.14` in every hosted
+  validation and deployment workflow.
+- Run explicit check, build, and test gates across all MoonBit backends on
+  Linux, macOS, and Windows.
+- Add a runnable reviewer quickstart plus CLI and coverage smoke gates.
+- Map the nine final-acceptance requirements to public, reproducible evidence.
+- Correct Mooncakes presentation and third-party dependency notices.
+
 ## 0.2.0 — 2026-09-18
 
 - Separate ordinary sort-key generation from diagnostic trace allocation.
