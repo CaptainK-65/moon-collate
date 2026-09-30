@@ -21,16 +21,34 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install MoonBit
         uses: hustcer/setup-moonbit@v1.23
+        with:
+          version: latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Resolve dependencies
         run: moon update
       - name: Record toolchain
         run: moon version --all
+      - name: Enforce minimum compiler
+        run: moon run tools/verify_toolchain.mbtx
       - name: Check every backend
         run: moon check --target all
+      - name: Build every backend
+        run: moon build --target all
       - name: Test every backend
         run: moon test --target all
+      - name: Run reviewer quickstart
+        if: runner.os == 'Linux'
+        run: moon run examples/quickstart
+      - name: Smoke-test CLI
+        if: runner.os == 'Linux'
+        run: |
+          moon run cmd/main -- version
+          moon run cmd/main -- compare resume résumé
+          moon run cmd/main -- sort --numeric file10 file2 file1
+      - name: Audit executable-line coverage
+        if: runner.os == 'Linux'
+        run: moon coverage analyze
       - name: Check formatting
         if: runner.os == 'Linux'
         run: moon fmt --check
@@ -48,9 +66,13 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install MoonBit
         uses: hustcer/setup-moonbit@v1.23
+        with:
+          version: latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: moon update
+      - name: Enforce minimum compiler
+        run: moon run tools/verify_toolchain.mbtx
       - name: Non-ignorable short profile
         run: moon run --target native cmd/conformance -- --non-ignorable --short
       - name: Shifted short profile
@@ -63,10 +85,14 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install MoonBit
         uses: hustcer/setup-moonbit@v1.23
+        with:
+          version: latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Resolve script dependencies
         run: moon update
+      - name: Enforce minimum compiler
+        run: moon run tools/verify_toolchain.mbtx
       - name: Rebuild Unicode tables
         run: |
           moon run tools/generate_ducet.mbtx -- third_party/unicode/uca-17.0.0/allkeys.txt generated_ducet.mbt
@@ -82,9 +108,13 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install MoonBit
         uses: hustcer/setup-moonbit@v1.23
+        with:
+          version: latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: moon update
+      - name: Enforce minimum compiler
+        run: moon run tools/verify_toolchain.mbtx
       - name: Build MoonBit browser adapter
         run: moon build --target js --release playground/app
       - name: Verify JavaScript boundary

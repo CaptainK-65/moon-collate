@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/CaptainK-65/moon-collate/releases/tag/v0.2.0"><img alt="Release v0.2.0" src="https://img.shields.io/badge/release-v0.2.0-c7ff4a?labelColor=111217"></a>
+  <a href="https://github.com/CaptainK-65/moon-collate/releases/tag/v0.2.1"><img alt="Release v0.2.1" src="https://img.shields.io/badge/release-v0.2.1-c7ff4a?labelColor=111217"></a>
   <a href="https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/CaptainK-65/moon-collate/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://www.unicode.org/reports/tr10/"><img alt="Unicode 17.0.0" src="https://img.shields.io/badge/Unicode-17.0.0-a58cff?labelColor=111217"></a>
   <a href="https://github.com/CaptainK-65/moon-collate/blob/main/LICENSE"><img alt="Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-7ed7ff?labelColor=111217"></a>
@@ -64,20 +64,38 @@ MoonCollate fills that ecosystem gap with one portable foundation:
 ### Add the package
 
 ```sh
-moon add CaptainK-65/moon-collate@0.2.0
+moon add CaptainK-65/moon-collate@0.2.1
 ```
 
 ### Build from source
 
-Install a current [MoonBit toolchain](https://www.moonbitlang.com/download/),
-then clone and validate the project:
+Install a [MoonBit toolchain](https://www.moonbitlang.com/download/) with
+`moonc >= 0.10.14`, then clone and validate the project:
 
 ```sh
 git clone https://github.com/CaptainK-65/moon-collate.git
 cd moon-collate
 moon update
 moon check --target all
+moon build --target all
 moon test --target all
+```
+
+For a 60-second reviewer path, run the executable example:
+
+```sh
+moon run examples/quickstart
+```
+
+Expected output:
+
+```text
+MoonCollate v0.2.1
+compare(resume, résumé): Less
+numeric sort: ["file1","file2","file10"]
+range [e, Zulu): ["é","E"]
+count equal to e: 2
+first difference: secondary
 ```
 
 ### Compare and sort
@@ -152,8 +170,8 @@ they do not contain independent collation implementations.
 
 ## Conformance and verification
 
-The v0.2.0 release candidate is validated against both the committed Unicode
-17.0.0 SHORT fixtures and the downloaded, checksum-pinned FULL fixtures:
+The v0.2 series is validated against both the committed Unicode 17.0.0 SHORT
+fixtures and the downloaded, checksum-pinned FULL fixtures:
 
 | Validation target | Result |
 | --- | ---: |
@@ -161,18 +179,18 @@ The v0.2.0 release candidate is validated against both the committed Unicode
 | Shifted FULL profile | **229,829 adjacent pairs, 0 failures** |
 | Focused automated tests | **54 per portable backend; 58 native, 0 failures** |
 | MoonBit backends | **native, js, wasm, wasm-gc passed** |
-| Coverage audit | **16 uncovered executable lines** |
+| Minimum compiler | **moonc 0.10.14 or newer, enforced in CI** |
 
 CI also protects compare/key equivalence, canonical equivalence, collection
 stability, numeric ordering, diagnostics, CLI behavior, and the browser model.
 Exact claims, fixture scope, and upstream hashes are recorded in the
 [conformance statement](docs/conformance.md). See the
 [release evidence](docs/release-evidence-v0.2.0.md) and
-[performance notes](docs/performance.md) for the reproducible terminal gates.
+[v0.2.1 acceptance map](docs/acceptance-v0.2.1.md) for the reproducible gates.
 
 ## Scope
 
-MoonCollate v0.2.0 implements the default Unicode 17.0.0 collation profile. It
+MoonCollate v0.2.1 implements the default Unicode 17.0.0 collation profile. It
 is deliberately a focused collation foundation; it is **not**:
 
 - a full ICU or CLDR locale-tailoring replacement;
@@ -196,6 +214,7 @@ moon-collate/
 ├── normalization.mbt       # canonical decomposition and ordering
 ├── generated_*.mbt         # reproducible Unicode lookup data
 ├── cmd/                    # CLI and conformance runners
+├── examples/quickstart/    # executable reviewer example
 ├── playground/             # MoonBit-backed browser Collation Lab
 ├── tools/                  # MoonBit data generators (.mbtx)
 ├── third_party/unicode/    # pinned upstream data and license
@@ -215,6 +234,7 @@ but are kept separate from hand-written implementation code.
 - [Conformance](docs/conformance.md) — test profiles, results, and hashes
 - [Performance](docs/performance.md) — allocation changes and measurement rules
 - [v0.2.0 release evidence](docs/release-evidence-v0.2.0.md) — traceable gates
+- [v0.2.1 acceptance map](docs/acceptance-v0.2.1.md) — nine-point evidence map
 - [Limitations](docs/limitations.md) — explicit boundaries and non-goals
 - [Changelog](CHANGELOG.md) — release history
 - [Security policy](SECURITY.md) — vulnerability reporting
@@ -225,7 +245,9 @@ but are kept separate from hand-written implementation code.
 moon update
 moon fmt --check
 moon check --target all
+moon build --target all
 moon test --target all
+moon run examples/quickstart
 moon run --target native cmd/conformance
 moon run --target native cmd/conformance -- --shifted
 moon run --target native cmd/conformance -- --full

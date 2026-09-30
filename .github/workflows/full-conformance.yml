@@ -14,11 +14,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install MoonBit
-        run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+        uses: hustcer/setup-moonbit@v1.23
+        with:
+          version: latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Resolve dependencies
         run: moon update
+      - name: Record and enforce toolchain
+        run: |
+          moon version --all
+          moon run tools/verify_toolchain.mbtx
       - name: Download pinned Unicode 17 fixtures
         working-directory: third_party/unicode/uca-17.0.0
         run: curl -fsSLo CollationTest.zip https://www.unicode.org/Public/17.0.0/uca/CollationTest.zip
